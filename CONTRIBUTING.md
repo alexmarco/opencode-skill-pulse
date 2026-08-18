@@ -79,6 +79,21 @@ Changes are reviewed on two axes:
 
 Feedback should be concrete and actionable; the author is expected to address it and re-run the checks.
 
+## Cutting a release
+
+Releases are cut manually by the maintainer through a single action: dispatching the `Release` workflow. Everything after that is automatic.
+
+Before dispatching, make sure a PR on `develop` sets `package.json` `version` to the version you are about to release; the workflow fails if the input does not match.
+
+To release version `X.Y.Z`:
+
+1. Open **Actions → Release → Run workflow** and select the `develop` branch.
+2. Enter the semver version without the `v` prefix (for example `0.2.0`) and run it.
+
+The workflow then: runs the full CI (typecheck, tests, and the real e2e against free opencode models with a 50% pass threshold), validates the version and the tag, merges `develop` into `main` through an auto-opened pull request (fast-forward, no merge node), creates and pushes the `vX.Y.Z` tag, and publishes the GitHub Release with auto-generated notes.
+
+In a tag-considering summary: a *tag* is an immutable label on a specific commit; a *Release* is a public page pointing to that tag with notes. The tag is the release boundary — there are no `release/*` branches (see ADR 0003). For the first release there is no previous tag, so the generated notes cover the whole history.
+
 ## License
 
 By contributing, you agree that your contributions are licensed under the [MIT License](LICENSE).

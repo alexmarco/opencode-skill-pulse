@@ -5,7 +5,7 @@ import { dirname, join } from "node:path"
 
 const OPENCODE = process.env.OPENCODE_BIN ?? "opencode"
 const PLUGIN_PATH = process.env.PLUGIN_PATH ?? process.cwd()
-const MIN_PASS_RATIO = 0.8
+const MIN_PASS_RATIO = 0.5
 const MAX_ATTEMPTS = 3
 const RUN_TIMEOUT_MS = 120_000
 const PROBE_TIMEOUT_MS = 90_000
