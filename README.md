@@ -27,9 +27,33 @@ As your skill library grows, it gets hard to know which skills you actually rely
 
 ## Install
 
-`skill-pulse` is a single-file plugin: the whole plugin lives in `skill-pulse.ts`. opencode auto-loads every `*.ts` and `*.js` file found in a plugin directory at startup. Because the plugin imports the `@opencode-ai/plugin` package, you must make that package resolvable from where the file lives.
+Add `skill-pulse` to the `plugin` array of your project or global `opencode.json` and restart opencode. It installs the plugin from git and resolves its dependencies automatically:
 
-### Global (all projects)
+```json
+{
+  "plugin": ["opencode-skill-pulse@git+https://github.com/alexmarco/opencode-skill-pulse.git"]
+}
+```
+
+opencode downloads the plugin into its cache on startup — no manual copying or package install needed.
+
+### Install from a local clone
+
+If you have the repository checked out already, point opencode at the cloned directory instead so you get the files in place:
+
+```json
+{
+  "plugin": ["/path/to/opencode-skill-pulse"]
+}
+```
+
+Run `bun install` in the repository clone first. This relies on the `main` field of the package, which points at `skill-pulse.ts`.
+
+### Manual copy (no clone, no git)
+
+`skill-pulse` is a single-file plugin living in `skill-pulse.ts`. opencode auto-loads every `*.ts` and `*.js` file found in a plugin directory at startup. Because the plugin imports the `@opencode-ai/plugin` package, you must make that package resolvable from where the file lives.
+
+Global (all projects):
 
 ```bash
 mkdir -p ~/.config/opencode/plugins
@@ -38,7 +62,7 @@ cd ~/.config/opencode
 bun add @opencode-ai/plugin
 ```
 
-### Project-level (this project only)
+Project-level (this project only):
 
 ```bash
 mkdir -p .opencode/plugins
@@ -46,18 +70,6 @@ cp skill-pulse.ts .opencode/plugins/
 cd .opencode
 bun add @opencode-ai/plugin
 ```
-
-### From `opencode.json`
-
-If you have this repository cloned, point opencode at the file from the `plugin` array of your project or global `opencode.json`:
-
-```json
-{
-  "plugin": ["/path/to/opencode-skill-pulse/skill-pulse.ts"]
-}
-```
-
-Run `bun install` in the repository clone first so `@opencode-ai/plugin` resolves. The path may be relative to the declaring config or an absolute path.
 
 ### Verify
 
