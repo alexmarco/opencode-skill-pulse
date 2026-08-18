@@ -1,5 +1,5 @@
 import type { Part } from "@opencode-ai/sdk"
-import type { PluginModule } from "@opencode-ai/plugin"
+import { tool, type PluginModule } from "@opencode-ai/plugin"
 import { Database } from "bun:sqlite"
 import { mkdirSync } from "node:fs"
 import { homedir } from "node:os"
@@ -192,6 +192,52 @@ const plugin: PluginModule = {
           directory,
           gitRoot: worktree || null,
         })
+      },
+
+      tool: {
+        "skill-usage": tool({
+          description:
+            "Query skill usage statistics: aggregated counts per skill and/or raw skill use events, filtered by skill, project, session, limit, or date range.",
+          args: {
+            skillName: tool.schema.string().optional().describe("Filter by skill name"),
+            project: tool.schema.string().optional().describe("Filter by project (working directory or git root)"),
+            sessionId: tool.schema.string().optional().describe("Filter by session ID"),
+            limit: tool.schema.number().optional().describe("Maximum number of rows to return"),
+            from: tool.schema.string().optional().describe("ISO timestamp lower bound"),
+            to: tool.schema.string().optional().describe("ISO timestamp upper bound"),
+            raw: tool.schema.boolean().optional().describe("Return raw events instead of aggregated counts"),
+          },
+          async execute(args) {
+            const filters: UsageFilters = {
+              skillName: args.skillName,
+              project: args.project,
+              sessionId: args.sessionId,
+              limit: args.limit,
+              from: args.from,
+              to: args.to,
+            }
+            if (args.raw) {
+              const events = store.queryEvents(filters)
+              const output =
+                events.length === 0
+                  ? "No skill use events."
+                  : events
+                      .map((e) => `[${e.timestamp}] skill=${e.skillName} session=${e.sessionId} project=${e.directory}`)
+                      .join("\n")
+              return {
+                title: `Skill use events (${events.length})`,
+                output,
+                metadata: { count: events.length },
+              }
+            }
+            const rows = store.aggregateBySkill(filters)
+            return {
+              title: `Skill usage (${rows.length} skills)`,
+              output: formatReport(rows),
+              metadata: { rows },
+            }
+          },
+        }),
       },
     }
   },
