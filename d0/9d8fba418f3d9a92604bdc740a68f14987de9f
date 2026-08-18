@@ -1,0 +1,14 @@
+CONTRIBUTING.md
+  h_8bca26bdf60347 5-15,76-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d09d8fba418f3d9a92604bdc740a68f14987de9f",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
