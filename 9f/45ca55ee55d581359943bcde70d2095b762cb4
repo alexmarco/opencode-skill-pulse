@@ -1,0 +1,16 @@
+.github/workflows/ci.yml
+  h_8bca26bdf60347 1-51
+scripts/e2e-opencode.ts
+  h_8bca26bdf60347 1-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9f45ca55ee55d581359943bcde70d2095b762cb4",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
