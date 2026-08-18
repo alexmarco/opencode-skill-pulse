@@ -10,7 +10,7 @@ export type SkillUseEvent = {
   skillName: string
   sessionId: string
   directory: string
-  gitRoot: string | null
+  gitRoot: string
 }
 
 export type AggregatedSkill = {
@@ -33,7 +33,7 @@ type EventRow = {
   skill_name: string
   session_id: string
   directory: string
-  git_root: string | null
+  git_root: string
 }
 
 type AggregateRow = {
@@ -62,7 +62,15 @@ export function createStore(db: Database) {
      VALUES (?, ?, ?, ?, ?)`,
   )
 
-  function buildQuery(filters: UsageFilters, select: string, tail: string) {
+  function buildQuery(filters: UsageFilters, kind: "aggregate" | "events") {
+    const select =
+      kind === "aggregate"
+        ? "SELECT skill_name, COUNT(*) AS count, MAX(timestamp) AS last_use"
+        : "SELECT timestamp, skill_name, session_id, directory, git_root"
+    const tail =
+      kind === "aggregate"
+        ? "GROUP BY skill_name ORDER BY count DESC, last_use DESC"
+        : "ORDER BY timestamp DESC"
     const where: string[] = []
     const params: (string | number)[] = []
     if (filters.skillName) {
@@ -74,8 +82,8 @@ export function createStore(db: Database) {
       params.push(filters.sessionId)
     }
     if (filters.project) {
-      where.push("(directory LIKE ? OR git_root LIKE ?)")
-      params.push(`%${filters.project}%`, `%${filters.project}%`)
+      where.push("(git_root = ? OR (git_root = '' AND directory = ?))")
+      params.push(filters.project, filters.project)
     }
     if (filters.from) {
       where.push("timestamp >= ?")
@@ -100,11 +108,7 @@ export function createStore(db: Database) {
     },
 
     aggregateBySkill(filters: UsageFilters = {}): AggregatedSkill[] {
-      const { sql, params } = buildQuery(
-        filters,
-        "SELECT skill_name, COUNT(*) AS count, MAX(timestamp) AS last_use",
-        "GROUP BY skill_name ORDER BY count DESC, last_use DESC",
-      )
+      const { sql, params } = buildQuery(filters, "aggregate")
       return (db.query(sql).all(...params) as AggregateRow[]).map((row) => ({
         skillName: row.skill_name,
         count: row.count,
@@ -113,11 +117,7 @@ export function createStore(db: Database) {
     },
 
     queryEvents(filters: UsageFilters = {}): SkillUseEvent[] {
-      const { sql, params } = buildQuery(
-        filters,
-        "SELECT timestamp, skill_name, session_id, directory, git_root",
-        "ORDER BY timestamp DESC",
-      )
+      const { sql, params } = buildQuery(filters, "events")
       return (db.query(sql).all(...params) as EventRow[]).map((row) => ({
         timestamp: row.timestamp,
         skillName: row.skill_name,
@@ -190,7 +190,7 @@ const plugin: PluginModule = {
           skillName,
           sessionId: input.sessionID,
           directory,
-          gitRoot: worktree || null,
+          gitRoot: worktree || "",
         })
       },
 
