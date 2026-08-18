@@ -43,6 +43,8 @@ type AggregateRow = {
 }
 
 export function createStore(db: Database) {
+  db.exec("PRAGMA busy_timeout = 5000")
+  db.exec("PRAGMA journal_mode = WAL")
   db.exec(`
     CREATE TABLE IF NOT EXISTS skill_usage_events (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

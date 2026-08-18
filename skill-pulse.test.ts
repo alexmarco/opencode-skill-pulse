@@ -178,3 +178,55 @@ describe("createStore", () => {
     expect(store.queryEvents({ project: "/repo10" }).map((e) => e.skillName)).toEqual(["tdd"])
   })
 })
+
+describe("concurrency", () => {
+  test("concurrent writers across processes do not fail with SQLITE_BUSY", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "skill-pulse-conc-"))
+    tempDirs.push(dir)
+    const dbPath = join(dir, "shared.db")
+    const childCount = 5
+    const insertsPerChild = 20
+
+    const childCode = `
+import { Database } from "bun:sqlite"
+import { createStore } from ${JSON.stringify(join(import.meta.dir, "skill-pulse.ts"))}
+
+;(async () => {
+  const dbPath = process.env.DB_PATH
+  if (!dbPath) throw new Error("DB_PATH missing")
+  const childName = process.env.CHILD ?? "child"
+  const store = createStore(new Database(dbPath))
+  for (let i = 0; i < ${insertsPerChild}; i++) {
+    store.recordEvent({
+      timestamp: new Date().toISOString(),
+      skillName: childName,
+      sessionId: "subprocess",
+      directory: "/tmp",
+      gitRoot: "",
+    })
+    await Bun.sleep(5 + Math.random() * 20)
+  }
+})()
+`
+
+    const subprocesses = await Promise.all(
+      Array.from({ length: childCount }, (_, i) =>
+        Bun.spawn([process.execPath, "-e", childCode], {
+          cwd: import.meta.dir,
+          env: { ...process.env, DB_PATH: dbPath, CHILD: `child-${i}` },
+          stdout: "pipe",
+          stderr: "pipe",
+        }),
+      ),
+    )
+    const exitCodes = await Promise.all(subprocesses.map((sub) => sub.exited))
+    const failed = subprocesses.filter((sub, i) => exitCodes[i] !== 0)
+    const stderrOutput = await Promise.all(failed.map((sub) => new Response(sub.stderr).text()))
+    expect(failed).toHaveLength(0)
+    if (failed.length > 0) console.error(stderrOutput)
+
+    const store = createStore(new Database(dbPath))
+    const total = store.aggregateBySkill().reduce((sum, row) => sum + row.count, 0)
+    expect(total).toBe(childCount * insertsPerChild)
+  })
+})
