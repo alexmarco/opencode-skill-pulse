@@ -1,0 +1,18 @@
+.github/dependabot.yml
+  h_8bca26bdf60347 1-6
+.github/workflows/ci.yml
+  h_8bca26bdf60347 9-11,16,24,33,42,44
+.github/workflows/release.yml
+  h_8bca26bdf60347 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f6e5421853d6afb0aed0d78550faa08bf524631d",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
