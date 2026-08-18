@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { Database } from "bun:sqlite"
-import { createStore } from "./skill-usage-tracker"
+import { createStore } from "./skill-pulse"
 
 function makeStore() {
   return createStore(new Database(":memory:"))

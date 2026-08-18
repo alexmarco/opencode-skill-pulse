@@ -129,13 +129,13 @@ export function createStore(db: Database) {
   }
 }
 
-function skillUsageDbPath() {
+function skillPulseDbPath() {
   const configDir = process.env.XDG_CONFIG_HOME || join(homedir(), ".config")
-  return join(configDir, "opencode", "skill-usage.db")
+  return join(configDir, "opencode", "skill-pulse.db")
 }
 
 function openStore() {
-  const dbPath = skillUsageDbPath()
+  const dbPath = skillPulseDbPath()
   mkdirSync(dirname(dbPath), { recursive: true })
   return createStore(new Database(dbPath))
 }
@@ -162,21 +162,21 @@ function formatReport(rows: AggregatedSkill[]): string {
 }
 
 const plugin: PluginModule = {
-  id: "skill-usage-tracker",
+  id: "skill-pulse",
   server: async ({ directory, worktree }) => {
     const store = openStore()
 
     return {
       config: async (config) => {
         config.command = config.command ?? {}
-        config.command["skill-usage"] = {
+        config.command["skill-pulse"] = {
           description: "Show aggregated skill usage per skill",
           template: "Report the skill usage statistics from the data provided.",
         }
       },
 
       "command.execute.before": async (input, output) => {
-        if (input.command !== "skill-usage") return
+        if (input.command !== "skill-pulse") return
         const rows = store.aggregateBySkill(parseCommandArgs(input.arguments))
         output.parts = [{ type: "text", text: formatReport(rows) }] as Part[]
       },
@@ -195,7 +195,7 @@ const plugin: PluginModule = {
       },
 
       tool: {
-        "skill-usage": tool({
+        "skill-pulse": tool({
           description:
             "Query skill usage statistics: aggregated counts per skill and/or raw skill use events, filtered by skill, project, session, limit, or date range.",
           args: {
