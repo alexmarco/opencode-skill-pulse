@@ -1,0 +1,14 @@
+package.json
+  h_8bca26bdf60347 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a2416e835a1c64d6bbc1500b7cb76a4afcae44da",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
