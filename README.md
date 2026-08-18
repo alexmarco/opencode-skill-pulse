@@ -133,7 +133,7 @@ bun run typecheck
 bun test
 ```
 
-Tests run against temporary fixture databases created under the system temp directory and removed when the run finishes.
+`bun test` runs the unit tests for the store (`skill-pulse.test.ts`, against temporary fixture databases created under the system temp directory and removed when the run finishes) and the PR-title validation tests in `scripts/check-pr-title.test.ts`.
 
 ## License
 

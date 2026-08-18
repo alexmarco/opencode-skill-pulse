@@ -36,7 +36,9 @@ bun run typecheck
 bun test
 ```
 
-`bun test` runs the unit tests in `skill-pulse.test.ts` against temporary fixture databases created under the system temp directory; they are removed when the run finishes.
+`bun test` runs the unit tests in `skill-pulse.test.ts` (against temporary fixture databases created under the system temp directory and removed when the run finishes) and the PR-title validation tests in `scripts/check-pr-title.test.ts`.
+
+CI enforces these checks on every pull request: typecheck, tests, PR-title validation (Conventional Commits), and a real end-to-end run of the plugin against opencode's free models. The end-to-end job requires prior maintainer approval for first-time contributors; the maintainer must enable "Run workflows from fork pull requests only after approval" under **Settings → Actions → General** the first time an external contributor opens a PR.
 
 ## Codebase layout
 
@@ -44,6 +46,9 @@ bun test
 | --- | --- |
 | `skill-pulse.ts` | The plugin: event recording, the store, the slash command, and the agent tool |
 | `skill-pulse.test.ts` | Unit tests for the store |
+| `scripts/check-pr-title.ts` | Pure PR-title validation against Conventional Commits, runnable in CI |
+| `scripts/e2e-opencode.ts` | End-to-end test: installs the plugin in an isolated opencode instance and verifies skill use events against each free model |
+| `.github/workflows/` | CI pipeline and release workflow |
 | `docs/adr/` | Architecture decision records |
 | `CONTEXT.md` | Domain glossary — read it before working to match the project's vocabulary |
 

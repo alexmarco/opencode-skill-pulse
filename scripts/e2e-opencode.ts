@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite"
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 
 const OPENCODE = process.env.OPENCODE_BIN ?? "opencode"
 const PLUGIN_PATH = process.env.PLUGIN_PATH ?? process.cwd()
@@ -68,14 +68,9 @@ function setupIsolatedEnv(): { home: string; xdg: string; project: string; dbPat
     ...process.env,
     HOME: home,
     XDG_CONFIG_HOME: xdg,
-    PATH: `${dirnameOf(OPENCODE)}:${process.env.PATH ?? ""}`,
+    PATH: `${dirname(OPENCODE)}:${process.env.PATH ?? ""}`,
   }
   return { home, xdg, project, dbPath, env }
-}
-
-function dirnameOf(p: string): string {
-  const idx = p.lastIndexOf("/")
-  return idx >= 0 ? p.slice(0, idx) : "."
 }
 
 function eventRecorded(dbPath: string): boolean {
@@ -107,8 +102,8 @@ async function probeRegistration(): Promise<Result> {
           const res = await fetch(`http://127.0.0.1:${port}/config`, { signal: AbortSignal.timeout(2_000) })
           if (res.ok) {
             const text = await res.text()
-            const registered = text.includes("skill-pulse")
-            if (!registered) return { ok: false, error: "plugin command not registered in server config" }
+            const commandRegistered = text.includes("Show aggregated skill usage per skill")
+            if (!commandRegistered) return { ok: false, error: "plugin command not registered in server config" }
             if (!existsSync(dbPath)) return { ok: false, error: "plugin store not created" }
             return { ok: true }
           }
