@@ -37,12 +37,12 @@ describe("createStore", () => {
     store.recordEvent({
       sessionId: "s1",
       directory: "/tmp/somewhere",
-      gitRoot: null,
+      gitRoot: "",
       timestamp: "2026-08-18T10:00:00.000Z",
       skillName: "grilling",
     })
 
-    expect(store.queryEvents()[0].gitRoot).toBeNull()
+    expect(store.queryEvents()[0].gitRoot).toBe("")
   })
 
   test("aggregates counts per skill including repeated loads", () => {
@@ -134,5 +134,34 @@ describe("createStore", () => {
     const ranged = store.queryEvents({ from: "2026-08-18T10:30:00.000Z", to: "2026-08-18T11:30:00.000Z" })
     expect(ranged).toHaveLength(1)
     expect(ranged[0].sessionId).toBe("s2")
+  })
+
+  test("queryEvents matches the project exactly, by git root or working directory", () => {
+    const store = makeStore()
+
+    store.recordEvent({
+      sessionId: "s1",
+      directory: "/repo/subdir",
+      gitRoot: "/repo",
+      timestamp: "2026-08-18T10:00:00.000Z",
+      skillName: "grilling",
+    })
+    store.recordEvent({
+      sessionId: "s1",
+      directory: "/repo10",
+      gitRoot: "",
+      timestamp: "2026-08-18T11:00:00.000Z",
+      skillName: "tdd",
+    })
+    store.recordEvent({
+      sessionId: "s1",
+      directory: "/repo",
+      gitRoot: "",
+      timestamp: "2026-08-18T12:00:00.000Z",
+      skillName: "research",
+    })
+
+    expect(store.queryEvents({ project: "/repo" }).map((e) => e.skillName)).toEqual(["research", "grilling"])
+    expect(store.queryEvents({ project: "/repo10" }).map((e) => e.skillName)).toEqual(["tdd"])
   })
 })
