@@ -49,30 +49,32 @@ jobs:
             exit 1
           fi
           echo "Tag v$VERSION is available"
-      - name: Merge develop into main via pull request
+      - name: Merge develop into main via a release pull request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="${{ steps.validate.outputs.version }}"
           git fetch origin main develop
-          PR_URL="$(gh pr list --base main --head develop --state open --json url --jq '.[0].url // empty')"
-          if [ -z "$PR_URL" ]; then
+          if [ "$(git rev-parse origin/main)" = "$(git rev-parse origin/develop)" ]; then
+            echo "develop and main already point to the same commit"
+          else
+            RELEASE_BRANCH="release/v$VERSION"
+            git push origin "origin/develop:refs/heads/$RELEASE_BRANCH"
             PR_URL="$(gh pr create \
               --base main \
-              --head develop \
+              --head "$RELEASE_BRANCH" \
               --title "chore: release v$VERSION" \
-              --body "Created by the Release workflow for v$VERSION." \
-              2>/dev/null || true)"
-          fi
-          if [ -n "$PR_URL" ]; then
+              --body "Run by the Release workflow for v$VERSION.")"
             echo "Waiting for checks on $PR_URL"
             gh pr checks "$PR_URL" --watch --interval 15
             echo "Merging $PR_URL"
-            gh pr merge "$PR_URL" --rebase --delete-branch=false
-          else
-            echo "develop is already up to date with main"
+            gh pr merge "$PR_URL" --rebase --delete-branch=true
+            git fetch origin main develop
           fi
-          git fetch origin main
+          if [ "$(git rev-parse 'origin/main^{tree}')" != "$(git rev-parse 'origin/develop^{tree}')" ]; then
+            echo "ERROR: origin/main has not caught up with origin/develop; refusing to tag a broken release"
+            exit 1
+          fi
       - name: Create tag
         run: |
           VERSION="${{ steps.validate.outputs.version }}"
