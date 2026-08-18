@@ -134,3 +134,7 @@ bun test
 ```
 
 Tests run against temporary fixture databases created under the system temp directory and removed when the run finishes.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
