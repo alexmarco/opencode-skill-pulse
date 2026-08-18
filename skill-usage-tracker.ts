@@ -1,3 +1,4 @@
+import type { Part } from "@opencode-ai/sdk"
 import type { PluginModule } from "@opencode-ai/plugin"
 import { Database } from "bun:sqlite"
 import { mkdirSync } from "node:fs"
@@ -139,12 +140,47 @@ function openStore() {
   return createStore(new Database(dbPath))
 }
 
+function parseCommandArgs(raw: string): UsageFilters {
+  const filters: UsageFilters = {}
+  for (const token of raw.trim().split(/\s+/)) {
+    const [key, value] = token.split("=")
+    if (!key || value === undefined) continue
+    if (key === "skill") filters.skillName = value
+    else if (key === "project") filters.project = value
+    else if (key === "top") {
+      const n = Number(value)
+      if (Number.isInteger(n) && n > 0) filters.limit = n
+    }
+  }
+  return filters
+}
+
+function formatReport(rows: AggregatedSkill[]): string {
+  if (rows.length === 0) return "No skills have been used yet."
+  const lines = rows.map((row) => `| ${row.skillName} | ${row.count} | ${row.lastUse} |`)
+  return ["| Skill | Uses | Last use |", "| --- | --- | --- |", ...lines].join("\n")
+}
+
 const plugin: PluginModule = {
   id: "skill-usage-tracker",
   server: async ({ directory, worktree }) => {
     const store = openStore()
 
     return {
+      config: async (config) => {
+        config.command = config.command ?? {}
+        config.command["skill-usage"] = {
+          description: "Show aggregated skill usage per skill",
+          template: "Report the skill usage statistics from the data provided.",
+        }
+      },
+
+      "command.execute.before": async (input, output) => {
+        if (input.command !== "skill-usage") return
+        const rows = store.aggregateBySkill(parseCommandArgs(input.arguments))
+        output.parts = [{ type: "text", text: formatReport(rows) }] as Part[]
+      },
+
       "tool.execute.before": async (input, output) => {
         if (input.tool !== "skill") return
         const skillName = output.args?.name
