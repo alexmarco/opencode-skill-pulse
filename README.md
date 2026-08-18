@@ -27,17 +27,45 @@ As your skill library grows, it gets hard to know which skills you actually rely
 
 ## Install
 
-Drop `skill-pulse.ts` into a plugin directory. Files there are auto-loaded at startup; no config entry needed.
+`skill-pulse` is a single-file plugin: the whole plugin lives in `skill-pulse.ts`. opencode auto-loads every `*.ts` and `*.js` file found in a plugin directory at startup. Because the plugin imports the `@opencode-ai/plugin` package, you must make that package resolvable from where the file lives.
+
+### Global (all projects)
 
 ```bash
-# Global (all projects)
+mkdir -p ~/.config/opencode/plugins
 cp skill-pulse.ts ~/.config/opencode/plugins/
-
-# Project-level (this project only)
-cp skill-pulse.ts .opencode/plugins/
+cd ~/.config/opencode
+bun add @opencode-ai/plugin
 ```
 
-Now just use your skills normally — every `skill` tool invocation is recorded automatically.
+### Project-level (this project only)
+
+```bash
+mkdir -p .opencode/plugins
+cp skill-pulse.ts .opencode/plugins/
+cd .opencode
+bun add @opencode-ai/plugin
+```
+
+### From `opencode.json`
+
+If you have this repository cloned, point opencode at the file from the `plugin` array of your project or global `opencode.json`:
+
+```json
+{
+  "plugin": ["/path/to/opencode-skill-pulse/skill-pulse.ts"]
+}
+```
+
+Run `bun install` in the repository clone first so `@opencode-ai/plugin` resolves. The path may be relative to the declaring config or an absolute path.
+
+### Verify
+
+Restart opencode, then type `/skill-pulse`. If the plugin loaded, you get a table of aggregate counts per skill ("No skills have been used yet." on the first run). From then on, every `skill` tool invocation is recorded automatically.
+
+### Uninstall
+
+Remove the file (or the `plugin` entry) and restart opencode. Recorded data in `skill-pulse.db` is left untouched; delete the database file to start from scratch.
 
 ## Usage
 
@@ -84,6 +112,8 @@ The tool accepts:
 Skill use events are stored in an embedded SQLite database at `~/.config/opencode/skill-pulse.db`, created on first use. The config directory honours `XDG_CONFIG_HOME` when set.
 
 ## Development
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started.
 
 ```bash
 bun install
