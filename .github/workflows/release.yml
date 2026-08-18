@@ -65,6 +65,8 @@ jobs:
               2>/dev/null || true)"
           fi
           if [ -n "$PR_URL" ]; then
+            echo "Waiting for checks on $PR_URL"
+            gh pr checks "$PR_URL" --watch --interval 15
             echo "Merging $PR_URL"
             gh pr merge "$PR_URL" --rebase --delete-branch=false
           else
