@@ -45,6 +45,5 @@ jobs:
         run: curl -fsSL https://opencode.ai/install | bash
       - name: Run e2e against free opencode models
         env:
-          OPENCODE_BIN: ${{ runner.home }}/.opencode/bin/opencode
           PLUGIN_PATH: ${{ github.workspace }}
         run: bun run scripts/e2e-opencode.ts
