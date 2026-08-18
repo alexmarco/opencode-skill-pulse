@@ -1,0 +1,14 @@
+.github/workflows/release.yml
+  h_8bca26bdf60347 54,63-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "19905eef9c72566ee7dd6f975bbf6a88cb560fd6",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
