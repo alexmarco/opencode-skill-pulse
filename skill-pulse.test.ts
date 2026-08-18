@@ -1,9 +1,22 @@
-import { describe, expect, test } from "bun:test"
+import { afterEach, describe, expect, test } from "bun:test"
 import { Database } from "bun:sqlite"
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { createStore } from "./skill-pulse"
 
+const tempDirs: string[] = []
+
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 function makeStore() {
-  return createStore(new Database(":memory:"))
+  const dir = mkdtempSync(join(tmpdir(), "skill-pulse-"))
+  tempDirs.push(dir)
+  return createStore(new Database(join(dir, "test.db")))
 }
 
 const BASE = {
