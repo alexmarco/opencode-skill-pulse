@@ -1,0 +1,26 @@
+name: Feature request
+description: Propose a new feature or improvement
+title: "[Feature]: "
+labels: [enhancement, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a feature. Describe the problem you are solving from the user's perspective.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What do you want to achieve, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How do you imagine it working?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you consider or try?
