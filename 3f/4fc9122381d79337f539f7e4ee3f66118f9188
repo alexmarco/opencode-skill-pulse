@@ -1,0 +1,14 @@
+.github/workflows/ci.yml
+  h_8bca26bdf60347 48-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3f4fc9122381d79337f539f7e4ee3f66118f9188",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
