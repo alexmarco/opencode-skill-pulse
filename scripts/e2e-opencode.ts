@@ -24,6 +24,7 @@ Greet the user when loaded.
 const PROMPT = `Use the skill tool to load the skill named '${SKILL_NAME}' and report what it says.`
 
 type Result = { ok: boolean; error?: string }
+type ModelResult = Result & { attempts: number }
 
 function log(msg: string) {
   console.error(`[e2e] ${msg}`)
@@ -121,7 +122,7 @@ async function probeRegistration(): Promise<Result> {
   }
 }
 
-function modelPasses(model: string): Promise<Result> {
+function modelPasses(model: string): Promise<ModelResult> {
   return (async () => {
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       log(`model ${model} attempt ${attempt}/${MAX_ATTEMPTS}`)
@@ -133,19 +134,19 @@ function modelPasses(model: string): Promise<Result> {
             log(`  run failed (${run.error}), retrying`)
             continue
           }
-          return { ok: false, error: `opencode run failed: ${run.error}` }
+          return { ok: false, error: `opencode run failed: ${run.error}`, attempts: attempt }
         }
-        if (eventRecorded(setup.dbPath)) return { ok: true }
+        if (eventRecorded(setup.dbPath)) return { ok: true, attempts: attempt }
         if (attempt < MAX_ATTEMPTS) {
           log("  no skill use event recorded, retrying")
           continue
         }
-        return { ok: false, error: "no skill use event recorded" }
+        return { ok: false, error: "no skill use event recorded", attempts: attempt }
       } finally {
         rmSync(setup.home, { recursive: true, force: true })
       }
     }
-    return { ok: false, error: "unreachable" }
+    return { ok: false, error: "unreachable", attempts: MAX_ATTEMPTS }
   })()
 }
 
@@ -176,20 +177,26 @@ if (models.length === 0) {
 }
 log(`enumerated ${models.length} free models: ${models.join(", ")}`)
 
-const passes: string[] = []
-const failures: { model: string; error: string }[] = []
+const results: (ModelResult & { model: string })[] = []
 for (const model of models) {
   const result = await modelPasses(model)
-  if (result.ok) passes.push(model)
-  else failures.push({ model, error: result.error ?? "unknown" })
+  results.push({ model, ...result })
 }
 
+const passes = results.filter((result) => result.ok)
+const failures = results.filter((result) => !result.ok)
+
 const required = Math.ceil(MIN_PASS_RATIO * models.length)
-const ratio = passes.length / models.length
 log(`passed ${passes.length}/${models.length} (need >= ${required})`)
 
+console.log("per-model summary:")
+for (const result of results) {
+  const status = result.ok ? "PASS" : "FAIL"
+  console.log(`  ${status} ${result.model} (attempt ${result.attempts}/${MAX_ATTEMPTS})${result.error ? ` - ${result.error}` : ""}`)
+}
+
 for (const failure of failures) {
-  log(`model ${failure.model} FAILED: ${failure.error}`)
+  console.log(`::warning::e2e: model ${failure.model} FAILED: ${failure.error}`)
 }
 
 if (passes.length >= required) {
