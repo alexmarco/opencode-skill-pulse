@@ -2,6 +2,17 @@
 
 Thanks for taking the time to contribute. This guide explains how to report issues, set up a development environment, and submit changes.
 
+## Roles and permissions
+
+The project is governed by a single maintainer.
+
+- **Maintainer** — the repository owner with write access. The maintainer merges pull requests, cuts releases, publishes tags, approves the first CI run of new contributors, and resolves whether an issue is a `wontfix`.
+- **Contributor** — anyone without write access. Contributors work on a fork and submit changes via pull requests. In exchange for helping, the maintainer reviews the changes on two axes (see [Reviewing changes](#reviewing-changes)) and keeps the build green.
+
+As the single person with write access, the maintainer also follows the contribution process: they work on feature branches off `develop` and merge their own pull requests like anyone else. Direct pushes to `main` and `develop` are blocked for everyone.
+
+**Emergency exception**: in exceptional cases the maintainer may bypass a protection (for example, temporarily disabling the ruleset). The exception must be exceptional and visible: it leaves a trace in the GitHub audit log and is recorded in writing in the affected pull request or release notes.
+
 ## Reporting issues
 
 Issues live on [GitHub Issues](https://github.com/alexmarco/opencode-skill-pulse/issues). Use the `gh` CLI or the web UI.
@@ -25,7 +36,9 @@ bun run typecheck
 bun test
 ```
 
-`bun test` runs the unit tests in `skill-pulse.test.ts` against temporary fixture databases created under the system temp directory; they are removed when the run finishes.
+`bun test` runs the unit tests in `skill-pulse.test.ts` (against temporary fixture databases created under the system temp directory and removed when the run finishes) and the PR-title validation tests in `scripts/check-pr-title.test.ts`.
+
+CI enforces these checks on every pull request: typecheck, tests, PR-title validation (Conventional Commits), and a real end-to-end run of the plugin against opencode's free models. The end-to-end job requires prior maintainer approval for first-time contributors; the maintainer must enable "Run workflows from fork pull requests only after approval" under **Settings → Actions → General** the first time an external contributor opens a PR.
 
 ## Codebase layout
 
@@ -33,6 +46,9 @@ bun test
 | --- | --- |
 | `skill-pulse.ts` | The plugin: event recording, the store, the slash command, and the agent tool |
 | `skill-pulse.test.ts` | Unit tests for the store |
+| `scripts/check-pr-title.ts` | Pure PR-title validation against Conventional Commits, runnable in CI |
+| `scripts/e2e-opencode.ts` | End-to-end test: installs the plugin in an isolated opencode instance and verifies skill use events against each free model |
+| `.github/workflows/` | CI pipeline and release workflow |
 | `docs/adr/` | Architecture decision records |
 | `CONTEXT.md` | Domain glossary — read it before working to match the project's vocabulary |
 
@@ -62,3 +78,7 @@ Changes are reviewed on two axes:
 - **Spec** — does the code do what the linked issue asked for?
 
 Feedback should be concrete and actionable; the author is expected to address it and re-run the checks.
+
+## License
+
+By contributing, you agree that your contributions are licensed under the [MIT License](LICENSE).
