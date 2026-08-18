@@ -1,0 +1,18 @@
+.github/ISSUE_TEMPLATE/bug.yml
+  h_8bca26bdf60347 1-49
+.github/ISSUE_TEMPLATE/feature_request.yml
+  h_8bca26bdf60347 1-26
+.github/PULL_REQUEST_TEMPLATE.md
+  h_8bca26bdf60347 1-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3bd7e0ce89c7a5d89cabc3256cd18da9f2924177",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
