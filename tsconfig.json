@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["skill-usage-tracker.ts", "skill-usage-tracker.test.ts"]
+  "include": ["skill-pulse.ts", "skill-pulse.test.ts"]
 }
