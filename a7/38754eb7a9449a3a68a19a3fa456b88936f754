@@ -1,0 +1,14 @@
+scripts/e2e-opencode.ts
+  h_8bca26bdf60347 27,125,137,139,144,149,180,183,186-188,192-197,199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a738754eb7a9449a3a68a19a3fa456b88936f754",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
