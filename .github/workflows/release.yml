@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver version to release, without the 'v' prefix (e.g. 0.2.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: develop
+      - name: Validate version
+        id: validate
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'; then
+            echo "Invalid semver: $VERSION"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Check package.json version matches
+        run: |
+          VERSION="${{ steps.validate.outputs.version }}"
+          PKG_VERSION="$(grep -m1 '"version"' package.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')"
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "package.json version ($PKG_VERSION) does not match release version ($VERSION)"
+            exit 1
+          fi
+      - name: Check tag does not exist
+        run: |
+          VERSION="${{ steps.validate.outputs.version }}"
+          if git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists"
+            exit 1
+          fi
+          echo "Tag v$VERSION is available"
+      - name: Merge develop into main via pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.validate.outputs.version }}"
+          git fetch origin main develop
+          PR_URL="$(gh pr list --base main --head develop --state open --json url --jq '.[0].url // empty')"
+          if [ -z "$PR_URL" ]; then
+            PR_URL="$(gh pr create \
+              --base main \
+              --head develop \
+              --title "chore: release v$VERSION" \
+              --body "Created by the Release workflow for v$VERSION." \
+              2>/dev/null || true)"
+          fi
+          if [ -n "$PR_URL" ]; then
+            echo "Waiting for checks on $PR_URL"
+            gh pr checks "$PR_URL" --watch --interval 15
+            echo "Merging $PR_URL"
+            gh pr merge "$PR_URL" --rebase --delete-branch=false
+          else
+            echo "develop is already up to date with main"
+          fi
+          git fetch origin main
+      - name: Create tag
+        run: |
+          VERSION="${{ steps.validate.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "v$VERSION" "origin/main"
+          git push origin "v$VERSION"
+      - name: Publish release with auto-generated notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.validate.outputs.version }}"
+          gh release create "v$VERSION" --generate-notes --title "v$VERSION"

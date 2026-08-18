@@ -1,0 +1,5 @@
+# Manual tagged releases instead of GitFlow release branches
+
+Releases are cut by the maintainer by manually dispatching the `Release` workflow with a semver input. The workflow validates the version and that `package.json` matches, verifies the `vX.Y.Z` tag is still free, runs the full CI, opens and merges a fast-forward pull request from `develop` into `main`, creates and pushes the tag, and publishes the release with auto-generated notes. This replaces the GitFlow `release/<v>` branch practice described in the global AGENTS.md.
+
+A `release/*` branch adds coordination overhead that a single-maintainer project does not need: nothing stabilises on the branch because the same single developer merges all PRs, and the tag is the real release boundary. The manual trigger keeps the decision to publish explicitly human, while the enforced CI and auto-generated notes keep it mechanical and reproducible. The merge from `develop` to `main` goes through the normal pull request flow so the branch protection rulesets are never bypassed, and the tag ends up on `main` pointing at the released commit.
