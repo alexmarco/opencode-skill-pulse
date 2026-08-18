@@ -51,7 +51,7 @@ jobs:
           echo "Tag v$VERSION is available"
       - name: Merge develop into main via a release pull request
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
         run: |
           VERSION="${{ steps.validate.outputs.version }}"
           git fetch origin main develop
@@ -60,11 +60,14 @@ jobs:
           else
             RELEASE_BRANCH="release/v$VERSION"
             git push origin "origin/develop:refs/heads/$RELEASE_BRANCH"
-            PR_URL="$(gh pr create \
-              --base main \
-              --head "$RELEASE_BRANCH" \
-              --title "chore: release v$VERSION" \
-              --body "Run by the Release workflow for v$VERSION.")"
+            PR_URL="$(gh pr list --base main --head "$RELEASE_BRANCH" --state open --json url --jq '.[0].url // empty')"
+            if [ -z "$PR_URL" ]; then
+              PR_URL="$(gh pr create \
+                --base main \
+                --head "$RELEASE_BRANCH" \
+                --title "chore: release v$VERSION" \
+                --body "Run by the Release workflow for v$VERSION.")"
+            fi
             echo "Waiting for checks on $PR_URL"
             gh pr checks "$PR_URL" --watch --interval 15
             echo "Merging $PR_URL"
