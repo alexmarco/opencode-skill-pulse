@@ -1,0 +1,20 @@
+.github/workflows/release.yml
+  h_8bca26bdf60347 13,26,36-43,52-73,79
+CONTRIBUTING.md
+  h_8bca26bdf60347 82-96
+docs/adr/0003-manual-tagged-releases.md
+  h_8bca26bdf60347 3,5
+scripts/e2e-opencode.ts
+  h_8bca26bdf60347 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "bb1792b6e62dfa06b8272c8f2d567dc4e680b63f",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
