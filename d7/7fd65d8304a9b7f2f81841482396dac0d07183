@@ -1,0 +1,16 @@
+LICENSE
+  h_8bca26bdf60347 1-21
+README.md
+  h_8bca26bdf60347 136-140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d77fd65d8304a9b7f2f81841482396dac0d07183",
+  "prompts": {},
+  "humans": {
+    "h_8bca26bdf60347": {
+      "author": "alexmarco <4004996+alexmarco@users.noreply.github.com>"
+    }
+  }
+}
